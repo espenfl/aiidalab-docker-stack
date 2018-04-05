@@ -115,14 +115,16 @@ RUN mkdir /project                                                 && \
     chown -R scientist:scientist /project
 
 EXPOSE 8888
+
+#===============================================================================
 USER scientist
+COPY postgres.sh /opt/
+COPY setup-singleuser.sh /opt/
 COPY start-singleuser.sh /opt/
 #COPY matcloud-jupyterhub-singleuser /opt/
+
+RUN /opt/setup-singleuser.sh
+
 WORKDIR /project
-
-WORKDIR /opt
-COPY setup-singleuser.sh /opt/
-RUN ./setup-singleuser.sh
-
 CMD ["/opt/start-singleuser.sh"]
 #EOF

@@ -7,15 +7,8 @@
 set -x
 
 #===============================================================================
-#TODO setup signal handler which shuts down posgresql and aiida.
-
-# Start postgresql
-echo "" > /project/.postgresql/logfile # empty log files
-rm -vf /project/.postgresql/.s.PGSQL.5432
-rm -vf /project/.postgresql/.s.PGSQL.5432.lock
-rm -vf /project/.postgresql/postmaster.pid
-#${PGBIN}/pg_ctl -D /project/.postgresql stop || true
-start_psql
+# start postgresql
+. /opt/postgres.sh
 
 #===============================================================================
 # environment
@@ -41,7 +34,7 @@ fi
 #  --notebook-dir="/project"                                      \
 #  --NotebookApp.iopub_data_rate_limit=1000000000                 \
 #  --NotebookApp.default_url="/apps/apps/home/start.ipynb"
+tail -f /dev/null
 
 #===============================================================================
-
 #EOF
