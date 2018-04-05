@@ -119,6 +119,10 @@ USER scientist
 COPY start-singleuser.sh /opt/
 #COPY matcloud-jupyterhub-singleuser /opt/
 WORKDIR /project
-CMD ["/opt/start-singleuser.sh"]
 
+WORKDIR /opt
+COPY setup-singleuser.sh /opt/
+RUN ./setup-singleuser.sh
+
+CMD ["/opt/start-singleuser.sh"]
 #EOF
