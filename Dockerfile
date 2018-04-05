@@ -1,5 +1,3 @@
-# Using ubuntu:latest to get recent versions of CP2K and QE.
-#
 # see also:
 # https://github.com/jupyter/docker-stacks/blob/master/base-notebook/Dockerfile
 # https://github.com/jupyter/docker-stacks/blob/master/scipy-notebook/Dockerfile
@@ -20,8 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-dev            \
     git                   \
     postgresql            \
-    cp2k                  \
-    quantum-espresso      \
     python-pip            \
     python-setuptools     \
     python-wheel          \
@@ -63,31 +59,20 @@ RUN wget https://downloads.rclone.org/rclone-v1.38-linux-amd64.zip;  \
     ln -s rclone-v1.38-linux-amd64/rclone .
 
 
-## install PyPI packages for Pyhon 3
+## install PyPI packages for Python 3
 RUN pip3 install --upgrade         \
     'tornado==4.5.3'               \
     'jupyterhub==0.8.0'            \
     'notebook==5.1.0'
 
-## install PyPI packages for Pyhon 2.
+## install PyPI packages for Python 2.
 ## Using pip freeze to keep user visible software stack stable.
 COPY requirements.txt /opt/
 RUN pip2 install -r /opt/requirements.txt
 
-## Get latest bugfixes from aiida-core
-## TODO: Remove this after aiida-core 0.11.2 is released
-#WORKDIR /opt/aiida-core
-#RUN git clone https://github.com/aiidateam/aiida_core.git && \
-#    cd aiida_core && \
-#     git checkout release_v0.11.2 && \
-#     pip install --no-deps . && \
-#    cd ..
-
-
 # active ipython kernels
 RUN python2 -m ipykernel install
 RUN python3 -m ipykernel install
-
 
 # enable Jupyter extensions
 RUN jupyter nbextension enable  --sys-prefix --py widgetsnbextension && \
@@ -98,14 +83,12 @@ RUN jupyter nbextension enable  --sys-prefix --py widgetsnbextension && \
     jupyter nbextension install --sys-prefix --py fileupload         && \
     jupyter nbextension enable  --sys-prefix --py fileupload
 
-
 # install Jupyter Appmode
 # server runs python3, notebook runs python2 - need both
 RUN pip2 install appmode==0.3.0                                          && \
     pip3 install appmode==0.3.0                                          && \
     jupyter nbextension     enable  --sys-prefix --py appmode            && \
     jupyter serverextension enable  --sys-prefix --py appmode
-
 
 # install MolPad
 WORKDIR /opt
@@ -126,13 +109,6 @@ RUN reentry scan
 # https://www.mail-archive.com/users@lists.open-mpi.org/msg30611.html
 RUN echo "btl_base_warn_component_unused = 0" >> /etc/openmpi/openmpi-mca-params.conf
 
-## install Tini
-## TODO: might not be needed in the future, Docker now has an init build-in
-#WORKDIR /opt
-#RUN wget https://github.com/krallin/tini/releases/download/v0.15.0/tini && \
-#    chmod +x /opt/tini
-#ENTRYPOINT ["/opt/tini", "--"]
-
 #===============================================================================
 RUN mkdir /project                                                 && \
     useradd --home /project --uid 1234 --shell /bin/bash scientist && \
@@ -141,7 +117,7 @@ RUN mkdir /project                                                 && \
 EXPOSE 8888
 USER scientist
 COPY start-singleuser.sh /opt/
-COPY matcloud-jupyterhub-singleuser /opt/
+#COPY matcloud-jupyterhub-singleuser /opt/
 WORKDIR /project
 CMD ["/opt/start-singleuser.sh"]
 

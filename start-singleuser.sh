@@ -130,14 +130,14 @@ if [ ! -e /project/apps ]; then
 fi
 
 #===============================================================================
-#start Jupyter notebook server
-cd /project
-/opt/matcloud-jupyterhub-singleuser                              \
-  --ip=0.0.0.0                                                   \
-  --port=8888                                                    \
-  --notebook-dir="/project"                                      \
-  --NotebookApp.iopub_data_rate_limit=1000000000                 \
-  --NotebookApp.default_url="/apps/apps/home/start.ipynb"
+##start Jupyter notebook server
+#cd /project
+#/opt/matcloud-jupyterhub-singleuser                              \
+#  --ip=0.0.0.0                                                   \
+#  --port=8888                                                    \
+#  --notebook-dir="/project"                                      \
+#  --NotebookApp.iopub_data_rate_limit=1000000000                 \
+#  --NotebookApp.default_url="/apps/apps/home/start.ipynb"
 
 #===============================================================================
 
