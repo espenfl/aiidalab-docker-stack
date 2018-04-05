@@ -23,6 +23,8 @@ function start_psql {
    done
 }
 
+
+# make DB directory, if not existent
 if [ ! -d /project/.postgresql ]; then
    mkdir /project/.postgresql
    ${PGBIN}/initdb -D /project/.postgresql
@@ -32,11 +34,18 @@ if [ ! -d /project/.postgresql ]; then
    psql -h localhost -d template1 -c "CREATE DATABASE aiidadb OWNER aiida;"
    psql -h localhost -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE aiidadb to aiida;"
 else
-   # Postgresql was probably not shutdown properly. Cleaning up the mess...
-   echo "" > /project/.postgresql/logfile # empty log files
-   rm -vf /project/.postgresql/.s.PGSQL.5432
-   rm -vf /project/.postgresql/.s.PGSQL.5432.lock
-   rm -vf /project/.postgresql/postmaster.pid
-   #${PGBIN}/pg_ctl -D /project/.postgresql stop || true
-   start_psql
+
+    # stores return value in $?
+    running=true
+    ${PGBIN}/pg_ctl -D /project/.postgresql status || running=false
+
+    if ! $running ; then
+       # Postgresql was probably not shutdown properly. Cleaning up the mess...
+       echo "" > /project/.postgresql/logfile # empty log files
+       rm -vf /project/.postgresql/.s.PGSQL.5432
+       rm -vf /project/.postgresql/.s.PGSQL.5432.lock
+       rm -vf /project/.postgresql/postmaster.pid
+       #${PGBIN}/pg_ctl -D /project/.postgresql stop || true
+       start_psql
+   fi
 fi
