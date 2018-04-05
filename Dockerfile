@@ -105,9 +105,9 @@ RUN cd /usr/local/lib/python2.7/dist-packages/aiida/workflows; rm -rf user; ln -
 # https://pypi.python.org/pypi/reentry/
 RUN reentry scan
 
-# disable MPI warnings that confuse ASE
-# https://www.mail-archive.com/users@lists.open-mpi.org/msg30611.html
-RUN echo "btl_base_warn_component_unused = 0" >> /etc/openmpi/openmpi-mca-params.conf
+## disable MPI warnings that confuse ASE
+## https://www.mail-archive.com/users@lists.open-mpi.org/msg30611.html
+#RUN echo "btl_base_warn_component_unused = 0" >> /etc/openmpi/openmpi-mca-params.conf
 
 #===============================================================================
 RUN mkdir /project                                                 && \
