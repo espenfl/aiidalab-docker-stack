@@ -17,7 +17,7 @@ export SHELL=/bin/bash
 
 #===============================================================================
 # setup AiiDA
-aiida_backend=sqlalchemy
+aiida_backend=django
 
 if [ $aiida_backend = "django" ]; then
     verdi daemon stop || true
