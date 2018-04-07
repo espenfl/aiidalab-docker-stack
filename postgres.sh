@@ -14,13 +14,15 @@ PGBIN=/usr/lib/postgresql/9.6/bin
 
 # helper function to start psql and wait for it
 function start_psql {
-   ${PGBIN}/pg_ctl -D /project/.postgresql -l /project/.postgresql/logfile start
-   TIMEOUT=20
-   until psql -h localhost template1 -c ";" || [ $TIMEOUT -eq 0 ]; do
-      echo ">>>>>>>>> Waiting for postgres server, $((TIMEOUT--)) remaining attempts..."
-      tail -n 50 /project/.postgresql/logfile
-      sleep 1
-   done
+   # -w waits until server is up
+   ${PGBIN}/pg_ctl -w -D /project/.postgresql -l /project/.postgresql/logfile start
+
+   #TIMEOUT=20
+   #until psql -h localhost template1 -c ";" || [ $TIMEOUT -eq 0 ]; do
+   #   echo ">>>>>>>>> Waiting for postgres server, $((TIMEOUT--)) remaining attempts..."
+   #   tail -n 50 /project/.postgresql/logfile
+   #   sleep 1
+   #done
 }
 
 
