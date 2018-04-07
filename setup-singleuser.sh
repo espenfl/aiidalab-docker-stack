@@ -17,7 +17,7 @@ export SHELL=/bin/bash
 
 #===============================================================================
 # setup AiiDA
-aiida_backend=django
+aiida_backend=sqlalchemy
 
 verdi setup                          \
   --non-interactive                 \
