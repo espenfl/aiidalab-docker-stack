@@ -5,9 +5,11 @@
 FROM ubuntu:17.10
 
 USER root
+RUN sed -i -e "s/\/\/archive\.ubuntu/\/\/au.archive.ubuntu/" /etc/apt/sources.list
 
 # install debian packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* && apt-get update && apt-get install -y --no-install-recommends  \
+    graphviz              \
     locales               \
     less                  \
     psmisc                \
