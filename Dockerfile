@@ -54,13 +54,6 @@ RUN base_url=http://archive.materialscloud.org/file/2018.0001/v1;  \
     chown -R root:root /opt/pseudos/;                                          \
     chmod -R +r /opt/pseudos/
 
-## install rclone
-WORKDIR /opt/rclone
-RUN wget https://downloads.rclone.org/rclone-v1.38-linux-amd64.zip;  \
-    unzip rclone-v1.38-linux-amd64.zip;                              \
-    ln -s rclone-v1.38-linux-amd64/rclone .
-
-
 ## install PyPI packages for Python 3
 RUN pip3 install --upgrade         \
     'tornado==4.5.3'               \

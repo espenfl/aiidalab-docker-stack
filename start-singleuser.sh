@@ -3,12 +3,12 @@
 # This script is executed whenever the docker container is (re)started.
 
 #===============================================================================
-# debuging
+# debugging
 set -x
 
 #===============================================================================
 # start postgresql
-. /opt/postgres.sh
+psql_start
 
 #===============================================================================
 # environment

@@ -8,7 +8,9 @@ set -x
 
 #===============================================================================
 # setup postgresql
-. /opt/postgres.sh
+#TODO setup signal handler which shuts down posgresql and aiida.
+source /opt/postgres.sh
+psql_start
 
 #===============================================================================
 # environment
@@ -47,9 +49,12 @@ done
 #===============================================================================
 # create bashrc
 cp -v /etc/skel/.bashrc /etc/skel/.bash_logout /etc/skel/.profile /project/
-echo 'eval "$(verdi completioncommand)"' >> /project/.bashrc
-echo 'export PYTHONPATH="/project"' >> /project/.bashrc
 
+echo >> /project/.bashrc <<EOF
+eval "$(verdi completioncommand)"
+export PYTHONPATH="/project"
+. /opt/postgres.sh
+EOF
 
 #===============================================================================
 # generate ssh key
@@ -59,15 +64,21 @@ ssh-keygen -f /project/.ssh/id_rsa -t rsa -N ''
 #===============================================================================
 # setup AiiDA jupyter extension
 mkdir -p /project/.ipython/profile_default/
-echo "c = get_config()"                         > /project/.ipython/profile_default/ipython_config.py
-echo "c.InteractiveShellApp.extensions = ["    >> /project/.ipython/profile_default/ipython_config.py
-echo "  'aiida.common.ipython.ipython_magics'" >> /project/.ipython/profile_default/ipython_config.py
-echo "]"                                       >> /project/.ipython/profile_default/ipython_config.py
+echo > /project/.ipython/profile_default/ipython_config.py <<EOF
+c = get_config()
+c.InteractiveShellApp.extensions = [
+    'aiida.common.ipython.ipython_magics'
+]
+EOF
 
 #===============================================================================
 # install/upgrade apps
 mkdir /project/apps
 touch /project/apps/__init__.py
 git clone https://github.com/materialscloud-org/mc-home /project/apps/home
+
+#===============================================================================
+# stop postgres again
+psql_stop
 
 #EOF
