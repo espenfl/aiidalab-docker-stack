@@ -59,7 +59,7 @@ RUN pip3 install --upgrade         \
     'tornado==4.5.3'               \
     'jupyterhub==0.8.1'            \
     'notebook==5.5.0'              \
-    'appmode==0.3.0'
+    'appmode==0.4.0'
 
 # install PyPI packages for Python 2.
 # This already enables jupyter notebook and server extensions
