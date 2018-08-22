@@ -8,7 +8,11 @@ FROM ubuntu:latest
 USER root
 
 # install debian packages
+# Add switch mirror to fix issue #9
+# https://github.com/materialscloud-org/mc-docker-stack/issues/9
+RUN echo "deb http://mirror.switch.ch/ftp/mirror/ubuntu/ bionic main \ndeb-src http://mirror.switch.ch/ftp/mirror/ubuntu/ bionic main \n" >> /etc/apt/sources.list
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && apt-get update
+# tzdata installation requested user input despite -y option
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     tzdata
 RUN apt-get install -y --no-install-recommends  \
