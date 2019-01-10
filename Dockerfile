@@ -1,16 +1,15 @@
-# see also:
-# https://github.com/jupyter/docker-stacks/blob/master/base-notebook/Dockerfile
-# https://github.com/jupyter/docker-stacks/blob/master/scipy-notebook/Dockerfile
-#
-# Using latest LTS release, see https://hub.docker.com/_/ubuntu/
-FROM ubuntu:latest
+# See https://github.com/phusion/baseimage-docker/blob/master/Changelog.md
+# Based on Ubuntu 18.04 since v0.11
+FROM phusion/baseimage:0.11
+
 
 USER root
 
-# install debian packages
 # Add switch mirror to fix issue #9
 # https://github.com/materialscloud-org/mc-docker-stack/issues/9
 RUN echo "deb http://mirror.switch.ch/ftp/mirror/ubuntu/ bionic main \ndeb-src http://mirror.switch.ch/ftp/mirror/ubuntu/ bionic main \n" >> /etc/apt/sources.list
+
+# install debian packages
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && apt-get update
 # tzdata installation requested user input despite -y option
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -54,7 +53,7 @@ ENV LANGUAGE en_US.UTF-8
 
 # Quantum-Espresso Pseudo Potentials
 WORKDIR /opt/pseudos
-RUN base_url=http://archive.materialscloud.org/file/2018.0001/v1;  \
+RUN base_url=http://archive.materialscloud.org/file/2018.0001/v3;  \
     for name in SSSP_efficiency_pseudos SSSP_accuracy_pseudos; do  \
        wget ${base_url}/${name}.aiida;                             \
     done;                                                                      \
@@ -63,20 +62,21 @@ RUN base_url=http://archive.materialscloud.org/file/2018.0001/v1;  \
 
 ## install PyPI packages for Python 3
 RUN pip3 install --upgrade         \
-    'tornado==4.5.3'               \
-    'jupyterhub==0.8.1'            \
+    'tornado==5.0.2'               \
+    'jupyterhub==0.9.4'            \
     'notebook==5.5.0'              \
-    'appmode==0.4.0'
+    'nbserverproxy==0.8.3'         \
+    'appmode-aiidalab==0.4.0.1'
 
 # install PyPI packages for Python 2.
 # This already enables jupyter notebook and server extensions
-RUN pip2 install --process-dependency-links git+https://github.com/materialscloud-org/aiidalab-metapkg@v18.06.0rc6
+RUN pip2 install git+https://github.com/aiidalab/aiidalab-metapkg@v19.01.0
 
 # the fileupload extension also needs to be "installed"
 RUN jupyter nbextension install --sys-prefix --py fileupload
 
 ## Get latest bugfixes from aiida-core
-RUN pip2 install git+https://github.com/ltalirz/aiida_core@v0.12.1_expire_on_commit_false
+#RUN pip2 install git+https://github.com/ltalirz/aiida_core@v0.12.1_expire_on_commit_false
 #WORKDIR /opt/aiida-core
 #RUN git clone https://github.com/aiidateam/aiida_core.git && \
 #    cd aiida_core && \

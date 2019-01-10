@@ -2,6 +2,6 @@
 
 set -x
 
-docker tag mc-docker-stack:discover mc-docker-stack:latest
+docker tag aiidalab-docker-stack:discover aiidalab-docker-stack:latest
 
 #EOF

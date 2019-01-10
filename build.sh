@@ -2,6 +2,6 @@
 
 set -x
 
-docker build -t mc-docker-stack:discover ./
+docker build -t aiidalab-docker-stack:discover ./
 
 #EOF
