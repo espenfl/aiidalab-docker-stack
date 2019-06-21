@@ -2,30 +2,31 @@
 # Based on Ubuntu 18.04 since v0.11
 FROM phusion/baseimage:0.11
 
-
 USER root
 
 # Add switch mirror to fix issue #9
-# https://github.com/materialscloud-org/mc-docker-stack/issues/9
+# https://github.com/aiidalab/aiidalab-docker-stack/issues/9
 RUN echo "deb http://mirror.switch.ch/ftp/mirror/ubuntu/ bionic main \ndeb-src http://mirror.switch.ch/ftp/mirror/ubuntu/ bionic main \n" >> /etc/apt/sources.list
 
 # install debian packages
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* && apt-get update
-# tzdata installation requested user input despite -y option
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    tzdata
-RUN apt-get install -y --no-install-recommends  \
+# Note: prefix all 'apt-get install' lines with 'apt-get update' to prevent failures in partial rebuilds
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    tzdata 
+RUN apt-get update && apt-get install -y --no-install-recommends  \
+    bzip2                 \
+    build-essential       \
+    ca-certificates       \
+    file                  \
+    git                   \
+    gnupg                 \
     graphviz              \
     locales               \
     less                  \
-    psmisc                \
-    bzip2                 \
-    build-essential       \
     libssl-dev            \
     libffi-dev            \
+    psmisc                \
     python-dev            \
-    git                   \
-    postgresql            \
     python-pip            \
     python-setuptools     \
     python-wheel          \
@@ -33,18 +34,22 @@ RUN apt-get install -y --no-install-recommends  \
     python3-setuptools    \
     python3-wheel         \
     python-tk             \
-    wget                  \
-    ca-certificates       \
-    vim                   \
-    ssh                   \
-    file                  \
-    zip                   \
-    unzip                 \
     rsync                 \
+    ssh                   \
+    unzip                 \
+    vim                   \
+    wget                  \
+    zip                   \
   && rm -rf /var/lib/apt/lists/*
 
+# Add repo for postgres-9.6
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
+RUN wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add -
+RUN apt-get update && apt-get install -y --no-install-recommends  \
+    postgresql-9.6        \
+  && rm -rf /var/lib/apt/lists/*
 
-# fix locals
+# fix locales
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -53,30 +58,41 @@ ENV LANGUAGE en_US.UTF-8
 
 # Quantum-Espresso Pseudo Potentials
 WORKDIR /opt/pseudos
-RUN base_url=http://archive.materialscloud.org/file/2018.0001/v3;  \
-    for name in SSSP_efficiency_pseudos SSSP_accuracy_pseudos; do  \
+RUN base_url=http://archive.materialscloud.org/file/2018.0001/v2;  \
+    for name in SSSP_efficiency_pseudos SSSP_precision_pseudos; do \
        wget ${base_url}/${name}.aiida;                             \
-    done;                                                                      \
-    chown -R root:root /opt/pseudos/;                                          \
+    done;                                                          \
+    chown -R root:root /opt/pseudos/;                              \
     chmod -R +r /opt/pseudos/
 
-## install PyPI packages for Python 3
+## install rclone
+#WORKDIR /opt/rclone
+#RUN wget https://downloads.rclone.org/rclone-v1.38-linux-amd64.zip;  \
+#    unzip rclone-v1.38-linux-amd64.zip;                              \
+#    ln -s rclone-v1.38-linux-amd64/rclone .
+
+# install PyPI packages for Python 3
 RUN pip3 install --upgrade         \
     'tornado==5.0.2'               \
     'jupyterhub==0.9.4'            \
     'notebook==5.5.0'              \
     'nbserverproxy==0.8.3'         \
-    'appmode-aiidalab==0.4.0.1'
+    'appmode-aiidalab==0.5.0.1'
+
+# enable nbserverproxy extension
+RUN jupyter serverextension enable --sys-prefix --py nbserverproxy
 
 # install PyPI packages for Python 2.
 # This already enables jupyter notebook and server extensions
-RUN pip2 install git+https://github.com/aiidalab/aiidalab-metapkg@v19.01.0
+RUN pip install aiidalab==v19.05.2
 
 # the fileupload extension also needs to be "installed"
 RUN jupyter nbextension install --sys-prefix --py fileupload
 
 ## Get latest bugfixes from aiida-core
-#RUN pip2 install git+https://github.com/ltalirz/aiida_core@v0.12.1_expire_on_commit_false
+#RUN pip2 install --no-dependencies git+https://github.com/ltalirz/aiida_core@v0.12.1_expire_on_commit_false
+
+# Install editable aiida version
 #WORKDIR /opt/aiida-core
 #RUN git clone https://github.com/aiidateam/aiida_core.git && \
 #    cd aiida_core && \
@@ -102,18 +118,12 @@ RUN cd /usr/local/lib/python2.7/dist-packages/aiida/workflows; rm -rf user; ln -
 # populate reentry cache for root user https://pypi.python.org/pypi/reentry/
 RUN reentry scan
 
-## disable MPI warnings that confuse ASE
-## https://www.mail-archive.com/users@lists.open-mpi.org/msg30611.html
-#RUN echo "btl_base_warn_component_unused = 0" >> /etc/openmpi/openmpi-mca-params.conf
-
 #===============================================================================
 RUN mkdir /project                                                 && \
     useradd --home /project --uid 1234 --shell /bin/bash scientist && \
     chown -R scientist:scientist /project
 
 EXPOSE 8888
-
-#===============================================================================
 USER scientist
 COPY postgres.sh /opt/
 COPY setup-singleuser.sh /opt/
@@ -124,4 +134,5 @@ RUN /opt/setup-singleuser.sh
 
 WORKDIR /project
 CMD ["/opt/start-singleuser.sh"]
+
 #EOF
